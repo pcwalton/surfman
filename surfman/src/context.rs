@@ -12,7 +12,14 @@ lazy_static! {
     pub static ref CREATE_CONTEXT_MUTEX: Mutex<ContextID> = Mutex::new(ContextID(0));
 }
 
-impl Context {
+impl crate::platform::hardware::context::Context {
+    pub fn id(&self) -> ContextID {
+        self.id
+    }
+}
+
+#[cfg(feature = "sm-software")]
+impl crate::platform::software::context::Context {
     pub fn id(&self) -> ContextID {
         self.id
     }

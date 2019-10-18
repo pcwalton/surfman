@@ -1,29 +1,34 @@
 //! Platform-specific backends.
 
 pub mod generic;
-#[cfg(feature = "sm-osmesa-default")]
-pub use generic::osmesa as default;
+#[cfg(feature = "sm-software")]
+pub use generic::osmesa as software;
 
 #[cfg(target_os = "android")]
 pub mod android;
 #[cfg(target_os = "android")]
-pub use android as default;
+pub use android as hardware;
 
 #[cfg(target_os = "macos")]
 pub mod macos;
-#[cfg(all(target_os = "macos", not(any(feature = "sm-x11", feature = "sm-osmesa-default"))))]
-pub use macos as default;
+#[cfg(target_os = "macos")]
+pub use macos as hardware;
 
 #[cfg(unix)]
 pub mod unix;
-#[cfg(all(any(feature = "sm-x11", all(unix, not(any(target_os = "macos", target_os = "android")))),
-          not(feature = "sm-osmesa-default")))]
-pub use unix::x11 as default;
+#[cfg(all(unix, not(target_os = "macos"), not(target_os = "android")))]
+pub use unix::x11 as hardware;
 
 #[cfg(target_os = "windows")]
 pub mod windows;
-#[cfg(all(target_os = "windows", feature = "sm-angle-default"))]
-pub use windows::angle as default;
-#[cfg(all(target_os = "windows",
-          not(any(feature = "sm-osmesa-default", feature = "sm-angle-default"))))]
-pub use windows::wgl as default;
+#[cfg(all(target_os = "windows", feature = "sm-angle"))]
+pub use windows::angle as hardware;
+#[cfg(all(target_os = "windows", not(feature = "sm-angle")))]
+pub use windows::wgl as hardware;
+
+#[cfg(feature = "sm-software-default")]
+pub use software as default;
+#[cfg(feature = "sm-universal-default")]
+pub use generic::universal as default;
+#[cfg(all(not(feature = "sm-universal-default"), not(feature = "sm-software-default")))]
+pub use hardware as default;

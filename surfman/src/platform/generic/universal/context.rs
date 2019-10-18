@@ -1,14 +1,14 @@
 //! A context abstraction that can switch between hardware and software rendering.
 
 use crate::gl::types::GLuint;
-use crate::platform::default::context::Context as HWContext;
-use crate::platform::default::context::ContextDescriptor as HWContextDescriptor;
-use crate::platform::default::surface::SurfaceType as HWSurfaceType;
-use crate::platform::default::device::Device as HWDevice;
-use crate::platform::generic::osmesa::context::Context as OSMesaContext;
-use crate::platform::generic::osmesa::context::ContextDescriptor as OSMesaContextDescriptor;
-use crate::platform::generic::osmesa::device::Device as OSMesaDevice;
-use crate::{ContextAttributes, Error, SurfaceID};
+use crate::platform::hardware::context::Context as HWContext;
+use crate::platform::hardware::context::ContextDescriptor as HWContextDescriptor;
+use crate::platform::hardware::surface::SurfaceType as HWSurfaceType;
+use crate::platform::hardware::device::Device as HWDevice;
+use crate::platform::software::context::Context as SWContext;
+use crate::platform::software::context::ContextDescriptor as SWContextDescriptor;
+use crate::platform::software::device::Device as SWDevice;
+use crate::{ContextAttributes, ContextID, Error, SurfaceID};
 use super::device::Device;
 use super::surface::Surface;
 use super::surface::SurfaceType;
@@ -18,13 +18,13 @@ use std::os::raw::c_void;
 
 pub enum Context {
     Hardware(HWContext),
-    Software(OSMesaContext),
+    Software(SWContext),
 }
 
 #[derive(Clone)]
 pub enum ContextDescriptor {
     Hardware(HWContextDescriptor),
-    Software(OSMesaContextDescriptor),
+    Software(SWContextDescriptor),
 }
 
 impl Device {
@@ -49,7 +49,7 @@ impl Device {
 
     /// Opens the device and context corresponding to the current software context.
     pub unsafe fn from_current_software_context() -> Result<(Device, Context), Error> {
-        OSMesaDevice::from_current_context().map(|(device, context)| {
+        SWDevice::from_current_context().map(|(device, context)| {
             (Device::Software(device), Context::Software(context))
         })
     }
@@ -201,6 +201,19 @@ impl Device {
                 device.get_proc_address(context, symbol_name)
             }
             _ => panic!("Incompatible context!"),
+        }
+    }
+}
+
+impl Context {
+    pub fn id(&self) -> ContextID {
+        match self {
+            &Context::Hardware(ref ctx) => {
+                ctx.id
+            }
+            &Context::Software(ref ctx) => {
+                ctx.id
+            }
         }
     }
 }

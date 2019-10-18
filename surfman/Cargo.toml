@@ -19,12 +19,14 @@ gl_generator = "0.11"
 default = ["sm-winit"]
 sm-angle = []
 sm-angle-builtin = ["mozangle"]
-sm-angle-default = ["sm-angle"]
 sm-osmesa = ["osmesa-sys"]
-sm-osmesa-default = ["sm-osmesa"]
-sm-no-wgl = ["sm-angle-default"]
+sm-no-wgl = ["sm-angle"]
 sm-winit = ["winit"]
 sm-x11 = ["x11"]
+sm-software = ["sm-osmesa"]
+sm-software-default = ["sm-software"]
+sm-universal = ["sm-software"]
+sm-universal-default = ["sm-universal"]
 
 [dependencies]
 bitflags = "1.1"

@@ -1,9 +1,9 @@
 //! A surface abstraction that can switch between hardware and software rendering.
 
 use crate::gl::types::{GLenum, GLuint};
-use crate::platform::default::surface::{Surface as HWSurface, SurfaceTexture as HWSurfaceTexture, SurfaceType as HWSurfaceType};
-use crate::platform::generic::osmesa::surface::Surface as OSMesaSurface;
-use crate::platform::generic::osmesa::surface::SurfaceTexture as OSMesaSurfaceTexture;
+use crate::platform::hardware::surface::{Surface as HWSurface, SurfaceTexture as HWSurfaceTexture, SurfaceType as HWSurfaceType};
+use crate::platform::software::surface::Surface as SWSurface;
+use crate::platform::software::surface::SurfaceTexture as SWSurfaceTexture;
 use crate::{Error, SurfaceID};
 use super::context::Context;
 use super::device::Device;
@@ -16,12 +16,12 @@ pub use crate::platform::generic::osmesa::surface::NativeWidget;
 #[derive(Debug)]
 pub enum Surface {
     Hardware(HWSurface),
-    Software(OSMesaSurface),
+    Software(SWSurface),
 }
 
 pub enum SurfaceTexture {
     Hardware(HWSurfaceTexture),
-    Software(OSMesaSurfaceTexture),
+    Software(SWSurfaceTexture),
 }
 
 impl Device {

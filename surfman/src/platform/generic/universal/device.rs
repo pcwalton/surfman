@@ -1,13 +1,13 @@
 //! A device abstraction that can switch between hardware and software rendering.
 
 use crate::{Error, GLApi};
-use crate::platform::default::device::Device as HWDevice;
-use crate::platform::generic::osmesa::device::Device as OSMesaDevice;
+use crate::platform::hardware::device::Device as HWDevice;
+use crate::platform::software::device::Device as SWDevice;
 use super::adapter::Adapter;
 
 pub enum Device {
     Hardware(HWDevice),
-    Software(OSMesaDevice),
+    Software(SWDevice),
 }
 
 impl Device {
@@ -15,7 +15,7 @@ impl Device {
     pub fn new(adapter: &Adapter) -> Result<Device, Error> {
         match *adapter {
             Adapter::Hardware(ref adapter) => HWDevice::new(adapter).map(Device::Hardware),
-            Adapter::Software(ref adapter) => OSMesaDevice::new(adapter).map(Device::Software),
+            Adapter::Software(ref adapter) => SWDevice::new(adapter).map(Device::Software),
         }
     }
 

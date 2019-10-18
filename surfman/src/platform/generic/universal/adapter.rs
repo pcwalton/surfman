@@ -1,13 +1,13 @@
 //! An adapter abstraction that can choose between hardware and software rendering.
 
 use crate::Error;
-use crate::platform::default::adapter::Adapter as HWAdapter;
-use crate::platform::generic::osmesa::adapter::Adapter as OSMesaAdapter;
+use crate::platform::hardware::adapter::Adapter as HWAdapter;
+use crate::platform::software::adapter::Adapter as SWAdapter;
 
 #[derive(Clone, Debug)]
 pub enum Adapter {
     Hardware(HWAdapter),
-    Software(OSMesaAdapter),
+    Software(SWAdapter),
 }
 
 impl Adapter {
@@ -28,6 +28,6 @@ impl Adapter {
     /// Returns the "best" software adapter on this system.
     #[inline]
     pub fn software() -> Result<Adapter, Error> {
-        OSMesaAdapter::default().map(Adapter::Software)
+        SWAdapter::default().map(Adapter::Software)
     }
 }
