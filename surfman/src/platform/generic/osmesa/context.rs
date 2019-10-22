@@ -4,10 +4,10 @@ use crate::context::{CREATE_CONTEXT_MUTEX, ContextID};
 use crate::gl::types::GLuint;
 use crate::gl::{self, Gl};
 use crate::surface::Framebuffer;
-use crate::{ContextAttributeFlags, ContextAttributes, Error, SurfaceID, WindowingApiError};
+use crate::{ContextAttributeFlags, ContextAttributes, Error, SurfaceID, SurfaceType, WindowingApiError};
 use super::device::Device;
+use super::surface::NativeWidget;
 use super::surface::Surface;
-use super::surface::SurfaceType;
 
 use euclid::default::Size2D;
 use osmesa_sys::{self, OSMESA_CONTEXT_MAJOR_VERSION, OSMESA_CONTEXT_MINOR_VERSION};
@@ -108,7 +108,7 @@ impl Device {
         Ok((device, context))
     }
 
-    pub fn create_context(&mut self, descriptor: &ContextDescriptor, surface_type: &SurfaceType)
+    pub fn create_context(&mut self, descriptor: &ContextDescriptor, surface_type: &SurfaceType<NativeWidget>)
                           -> Result<Context, Error> {
         // Take a lock.
         let mut next_context_id = CREATE_CONTEXT_MUTEX.lock().unwrap();

@@ -7,9 +7,9 @@ use crate::glx::types::{Display as GlxDisplay, GLXContext, GLXFBConfig};
 use crate::glx::{self, Glx};
 use crate::surface::Framebuffer;
 use crate::{ContextAttributeFlags, ContextAttributes, Error, GLVersion};
-use crate::{SurfaceID, WindowingApiError};
+use crate::{SurfaceID, SurfaceType, WindowingApiError};
 use super::device::{Device, Quirks, UnsafeDisplayRef};
-use super::surface::{Surface, SurfaceDrawables, SurfaceKind, SurfaceType};
+use super::surface::{NativeWidget, Surface, SurfaceDrawables, SurfaceKind};
 
 use euclid::default::Size2D;
 use libc::{RTLD_DEFAULT, RTLD_LAZY, dlopen, dlsym};
@@ -188,7 +188,7 @@ impl Device {
         })
     }
 
-    pub fn create_context(&mut self, descriptor: &ContextDescriptor, surface_type: &SurfaceType)
+    pub fn create_context(&mut self, descriptor: &ContextDescriptor, surface_type: &SurfaceType<NativeWidget>)
                           -> Result<Context, Error> {
         // Take a lock.
         let mut next_context_id = CREATE_CONTEXT_MUTEX.lock().unwrap();
