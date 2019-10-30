@@ -80,6 +80,10 @@ version = "0.2"
 features = ["egl"]
 optional = true
 
+# Ensure that we have a static libEGL.lib present for running tests
+[target.'cfg(target_os = "windows")'.dev-dependencies]
+mozangle = { version = "0.2", features = ["egl"] }
+
 [target.'cfg(target_os = "windows")'.dependencies]
 wio = "0.2"
 winapi = { version = "0.3", features = ["d3d11", "wingdi", "winuser", "libloaderapi"] }
