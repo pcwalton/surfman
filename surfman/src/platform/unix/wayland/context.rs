@@ -42,6 +42,12 @@ impl Drop for Context {
     }
 }
 
+impl Context {
+    pub fn id(&self) -> ContextID {
+        self.id
+    }
+}
+
 impl Device {
     #[inline]
     pub fn create_context_descriptor(&self, attributes: &ContextAttributes)

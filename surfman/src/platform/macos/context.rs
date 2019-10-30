@@ -108,6 +108,12 @@ impl Clone for ContextDescriptor {
 
 unsafe impl Send for ContextDescriptor {}
 
+impl Context {
+    pub fn id(&self) -> ContextID {
+        self.id
+    }
+}
+
 impl Device {
     pub fn create_context_descriptor(&self, attributes: &ContextAttributes)
                                      -> Result<ContextDescriptor, Error> {

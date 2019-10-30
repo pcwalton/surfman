@@ -12,12 +12,6 @@ lazy_static! {
     pub static ref CREATE_CONTEXT_MUTEX: Mutex<ContextID> = Mutex::new(ContextID(0));
 }
 
-impl Context {
-    pub fn id(&self) -> ContextID {
-        self.id
-    }
-}
-
 bitflags! {
     // These roughly correspond to:
     // https://www.khronos.org/registry/webgl/specs/latest/1.0/#WEBGLCONTEXTATTRIBUTES

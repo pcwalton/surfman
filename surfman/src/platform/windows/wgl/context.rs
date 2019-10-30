@@ -145,6 +145,12 @@ pub(crate) enum Framebuffer {
     Surface(Surface),
 }
 
+impl Context {
+    pub fn id(&self) -> ContextID {
+        self.id
+    }
+}
+
 impl Device {
     #[allow(non_snake_case)]
     pub fn create_context_descriptor(&self, attributes: &ContextAttributes)
