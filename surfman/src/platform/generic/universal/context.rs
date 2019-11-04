@@ -10,7 +10,7 @@ use crate::platform::generic::osmesa::context::ContextDescriptor as OSMesaContex
 use crate::platform::generic::osmesa::device::Device as OSMesaDevice;
 use crate::{ContextAttributes, ContextID, Error, SurfaceAccess, SurfaceID, SurfaceType};
 use super::device::Device;
-use super::surface::Surface;
+use super::surface::{Surface, SurfaceRef};
 
 use euclid::default::Size2D;
 use std::os::raw::c_void;
@@ -189,6 +189,16 @@ impl Device {
                 device.context_id(context)
             }
             _ => panic!("Incompatible context!"),
+        }
+    }
+
+    pub fn context_surface<'c>(&self, context: &'c Context) -> Result<Option<SurfaceRef<'c>>, Error> {
+        match (self, context) {
+            (Device::Hardware(ref device), Context::Hardware(ref context)) =>
+                device.context_surface(context).map(|s| s.map(SurfaceRef::Hardware)),
+            (Device::Software(ref device), Context::Software(ref context)) =>
+                device.context_surface(context).map(|s| s.map(SurfaceRef::Software)),
+            _ => Err(Error::UnsupportedOnThisPlatform),
         }
     }
 }

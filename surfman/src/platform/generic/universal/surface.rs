@@ -20,6 +20,12 @@ pub enum Surface {
     Software(OSMesaSurface),
 }
 
+#[derive(Debug)]
+pub enum SurfaceRef<'a> {
+    Hardware(&'a HWSurface),
+    Software(&'a OSMesaSurface),
+}
+
 pub enum SurfaceTexture {
     Hardware(HWSurfaceTexture),
     Software(OSMesaSurfaceTexture),
@@ -157,6 +163,32 @@ impl Surface {
         match *self {
             Surface::Hardware(ref surface) => surface.framebuffer_object(),
             Surface::Software(ref surface) => surface.framebuffer_object(),
+        }
+    }
+}
+
+impl<'a> SurfaceRef<'a> {
+    #[inline]
+    pub fn size(&self) -> Size2D<i32> {
+        match *self {
+            SurfaceRef::Hardware(ref surface) => surface.size(),
+            SurfaceRef::Software(ref surface) => surface.size(),
+        }
+    }
+
+    #[inline]
+    pub fn id(&self) -> SurfaceID {
+        match *self {
+            SurfaceRef::Hardware(ref surface) => surface.id(),
+            SurfaceRef::Software(ref surface) => surface.id(),
+        }
+    }
+
+    #[inline]
+    pub fn framebuffer_object(&self) -> GLuint {
+        match *self {
+            SurfaceRef::Hardware(ref surface) => surface.framebuffer_object(),
+            SurfaceRef::Software(ref surface) => surface.framebuffer_object(),
         }
     }
 }
