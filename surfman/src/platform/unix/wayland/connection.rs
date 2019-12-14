@@ -34,7 +34,12 @@ pub(crate) struct NativeConnectionWrapper {
 }
 
 /// Wrapper for a Wayland display.
-pub struct NativeConnection(pub *mut wl_display);
+pub struct NativeConnection {
+    /// The wayland display
+    pub wayland_display: *mut wl_display,
+    /// Some if the display is already connected to EGL
+    pub egl_display: Option<EGLDisplay>,
+}
 
 unsafe impl Send for Connection {}
 
@@ -44,7 +49,7 @@ impl Connection {
     pub fn new() -> Result<Connection, Error> {
         unsafe {
             let wayland_display = (WAYLAND_CLIENT_HANDLE.wl_display_connect)(ptr::null());
-            Connection::from_wayland_display(wayland_display, true)
+            Connection::from_wayland_display(wayland_display, None)
         }
     }
 
@@ -55,13 +60,16 @@ impl Connection {
     /// as the connection is.
     pub unsafe fn from_native_connection(native_connection: NativeConnection)
                                          -> Result<Connection, Error> {
-        Connection::from_wayland_display(native_connection.0, false)
+        Connection::from_wayland_display(native_connection.wayland_display, native_connection.egl_display)
     }
 
     /// Returns the underlying native connection.
     #[inline]
     pub fn native_connection(&self) -> NativeConnection {
-        NativeConnection(self.native_connection.wayland_display)
+        NativeConnection {
+            wayland_display: self.native_connection.wayland_display,
+            egl_display: Some(self.native_connection.egl_display),
+        }
     }
 
     /// Returns the "best" adapter on this system, preferring high-performance hardware adapters.
@@ -108,7 +116,7 @@ impl Connection {
         Device::new(self, &native_device.adapter)
     }
 
-    unsafe fn from_wayland_display(wayland_display: *mut wl_display, is_owned: bool)
+    unsafe fn from_wayland_display(wayland_display: *mut wl_display, egl_display: Option<EGLDisplay>)
                                    -> Result<Connection, Error> {
         if wayland_display.is_null() {
             return Err(Error::ConnectionFailed);
@@ -116,16 +124,23 @@ impl Connection {
 
         EGL_FUNCTIONS.with(|egl| {
             let display_attributes = [egl::NONE as EGLAttrib];
-            let egl_display = egl.GetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR,
-                                                     wayland_display as *mut c_void,
-                                                     display_attributes.as_ptr());
-            if egl_display == egl::NO_DISPLAY {
-                return Err(Error::DeviceOpenFailed);
-            }
+            let is_owned = egl_display.is_none();
+            let egl_display = match egl_display {
+                Some(egl_display) => egl_display,
+                None => {
+                    let egl_display = egl.GetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR,
+                                                             wayland_display as *mut c_void,
+                                                             display_attributes.as_ptr());
+                    if egl_display == egl::NO_DISPLAY {
+                        return Err(Error::DeviceOpenFailed);
+                    }
 
-            let (mut egl_major_version, mut egl_minor_version) = (0, 0);
-            let ok = egl.Initialize(egl_display, &mut egl_major_version, &mut egl_minor_version);
-            assert_ne!(ok, egl::FALSE);
+                    let (mut egl_major_version, mut egl_minor_version) = (0, 0);
+                    let ok = egl.Initialize(egl_display, &mut egl_major_version, &mut egl_minor_version);
+                    assert_ne!(ok, egl::FALSE);
+                    egl_display
+                }
+            };
 
             Ok(Connection {
                 native_connection: Arc::new(NativeConnectionWrapper {
@@ -145,7 +160,7 @@ impl Connection {
                 Some(wayland_display) => wayland_display as *mut wl_display,
                 None => return Err(Error::IncompatibleWinitWindow),
             };
-            Connection::from_wayland_display(wayland_display, false)
+            Connection::from_wayland_display(wayland_display, None)
         }
     }
 
@@ -180,5 +195,19 @@ impl Drop for NativeConnectionWrapper {
                 (WAYLAND_CLIENT_HANDLE.wl_display_disconnect)(self.wayland_display);
             }
         }
+    }
+}
+
+impl NativeConnection {
+    /// Create a `NativeConnection` from a wayland display which is connected to the current `EGLDisplay`.
+    /// This function is safe to call as long as the wayland display is current.
+    pub unsafe fn from_current_wayland_display(wayland_display: *mut wl_display) -> NativeConnection {
+        EGL_FUNCTIONS.with(|egl| {
+            let egl_display = Some(egl.GetCurrentDisplay());
+            NativeConnection {
+                wayland_display,
+                egl_display,
+            }
+        })
     }
 }
