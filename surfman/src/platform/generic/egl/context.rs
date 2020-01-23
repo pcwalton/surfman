@@ -10,7 +10,8 @@ use crate::{ContextAttributeFlags, ContextAttributes, ContextID, Error, GLApi, G
 use crate::{Gl, SurfaceInfo};
 use super::device::EGL_FUNCTIONS;
 use super::error::ToWindowingApiError;
-use super::ffi::EGL_CONTEXT_MINOR_VERSION_KHR;
+use super::ffi::{EGL_CONTEXT_MINOR_VERSION_KHR, EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT};
+use super::ffi::{EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT, EGL_CONTEXT_OPENGL_PROFILE_MASK};
 use super::surface::{EGLBackedSurface, ExternalEGLSurfaces};
 
 use std::ffi::CString;
@@ -48,6 +49,7 @@ pub struct NativeContext {
 pub struct ContextDescriptor {
     pub(crate) egl_config_id: EGLint,
     pub(crate) gl_version: GLVersion,
+    pub(crate) compatibility_profile: bool,
 }
 
 #[must_use]
@@ -250,13 +252,12 @@ impl ContextDescriptor {
                              extra_config_attributes: &[EGLint])
                              -> Result<ContextDescriptor, Error> {
         let flags = attributes.flags;
-        if flags.contains(ContextAttributeFlags::COMPATIBILITY_PROFILE) {
-            return Err(Error::UnsupportedGLProfile);
-        }
 
         let alpha_size   = if flags.contains(ContextAttributeFlags::ALPHA)   { 8  } else { 0 };
         let depth_size   = if flags.contains(ContextAttributeFlags::DEPTH)   { 24 } else { 0 };
         let stencil_size = if flags.contains(ContextAttributeFlags::STENCIL) { 8  } else { 0 };
+
+        let compatibility_profile = flags.contains(ContextAttributeFlags::COMPATIBILITY_PROFILE);
 
         // Create required config attributes.
         //
@@ -322,7 +323,11 @@ impl ContextDescriptor {
             let egl_config_id = get_config_attr(egl_display, egl_config, egl::CONFIG_ID as EGLint);
             let gl_version = attributes.version;
 
-            Ok(ContextDescriptor { egl_config_id, gl_version })
+            Ok(ContextDescriptor {
+                egl_config_id,
+                gl_version,
+                compatibility_profile,
+            })
         })
     }
 
@@ -408,12 +413,18 @@ pub(crate) unsafe fn create_context(egl_display: EGLDisplay,
 
     let egl_config = egl_config_from_id(egl_display, descriptor.egl_config_id);
 
+    let mut profile_mask = EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT;
+    if descriptor.compatibility_profile {
+        profile_mask |= EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT;
+    }
+
     // Include some extra zeroes to work around broken implementations.
     //
     // FIXME(pcwalton): Which implementations are those? (This is copied from Gecko.)
     let egl_context_attributes = [
         egl::CONTEXT_CLIENT_VERSION as EGLint,      descriptor.gl_version.major as EGLint,
         EGL_CONTEXT_MINOR_VERSION_KHR as EGLint,    descriptor.gl_version.minor as EGLint,
+        EGL_CONTEXT_OPENGL_PROFILE_MASK as EGLint,  profile_mask,
         egl::NONE as EGLint, 0,
         0, 0,
     ];
