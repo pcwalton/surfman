@@ -114,7 +114,8 @@ impl Connection {
     /// Creates a native widget type from the given `winit` window.
     /// 
     /// This type can be later used to create surfaces that render to the window.
-    #[cfg(feature = "sm-winit")]
+    // This is not implemented for UWP
+    #[cfg(all(feature = "sm-winit", not(target_vendor = "uwp")))]
     #[inline]
     pub fn create_native_widget_from_winit_window(&self, window: &Window)
                                                   -> Result<NativeWidget, Error> {
