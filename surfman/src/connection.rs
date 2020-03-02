@@ -57,4 +57,9 @@ pub trait Connection: Sized {
     #[cfg(feature = "sm-winit")]
     fn create_native_widget_from_winit_window(&self, window: &Window)
                                               -> Result<Self::NativeWidget, Error>;
+
+    /// Create a native widget type from the given `raw_window_handle::HasRawWindowHandle`.
+    #[cfg(feature = "sm-raw-window-handle")]
+    fn create_native_widget_from_rwh(&self, window: raw_window_handle::RawWindowHandle)
+                                              -> Result<Self::NativeWidget, Error>;
 }

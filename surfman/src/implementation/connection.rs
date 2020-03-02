@@ -72,4 +72,11 @@ impl ConnectionInterface for Connection {
                                               -> Result<NativeWidget, Error> {
         Connection::create_native_widget_from_winit_window(self, window)
     }
+
+    #[inline]
+    #[cfg(feature = "sm-raw-window-handle")]
+    fn create_native_widget_from_rwh(&self, window: raw_window_handle::RawWindowHandle)
+                                              -> Result<NativeWidget, Error> {
+        Connection::create_native_widget_from_rwh(self, window)
+    }
 }
