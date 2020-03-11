@@ -174,7 +174,7 @@ impl Connection {
     }
 
     /// Creates a native widget type from the given `raw_window_handle::HasRawWindowHandle`
-    #[cfg(feature = "sm-winit")]
+    #[cfg(feature = "sm-raw-window-handle")]
     pub fn create_native_widget_from_rwh(
             &self,
             raw_handle: raw_window_handle::RawWindowHandle)

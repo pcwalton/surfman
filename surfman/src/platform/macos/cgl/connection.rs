@@ -96,4 +96,13 @@ impl Connection {
                                                   -> Result<NativeWidget, Error> {
         self.0.create_native_widget_from_winit_window(window)
     }
+
+    /// Create a native widget type from the given `raw_window_handle::RawWindowHandle`.
+    #[cfg(feature = "sm-raw-window-handle")]
+    #[inline]
+    pub fn create_native_widget_from_rwh(&self, _: raw_window_handle::RawWindowHandle)
+                                                  -> Result<NativeWidget, Error> {
+        // TODO: support raw window handle on cgl
+        Err(Error::UnsupportedOnThisPlatform)
+    }
 }

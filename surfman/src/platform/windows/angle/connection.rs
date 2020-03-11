@@ -125,6 +125,15 @@ impl Connection {
             Ok(NativeWidget { window_handle: hwnd })
         }
     }
+
+    /// Create a native widget type from the given `raw_window_handle::RawWindowHandle`.
+    #[cfg(feature = "sm-raw-window-handle")]
+    #[inline]
+    pub fn create_native_widget_from_rwh(&self, _: raw_window_handle::RawWindowHandle)
+                                                  -> Result<NativeWidget, Error> {
+        // TODO: support raw window handle on windows angle
+        Err(Error::UnsupportedOnThisPlatform)
+    }
 }
 
 impl NativeConnection {
