@@ -73,7 +73,6 @@ features = ["client", "dlopen", "egl"]
 [target.'cfg(all(unix, not(any(target_os = "macos", target_os = "android"))))'.dependencies.x11]
 version = "2.3.0"
 features = ["xlib"]
-optional = true
 
 [target.'cfg(any(not(unix), target_os = "macos", target_os = "android"))'.dependencies.x11]
 optional = true
